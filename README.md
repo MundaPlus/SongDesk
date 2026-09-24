@@ -4,7 +4,15 @@
 
 It is a server-rendered web app that runs on a home server and is used from any device on the local network. Every AI step runs as a background job, so you can start a generation, move on, and find the result waiting when you come back.
 
-<!-- screenshots -->
+![Dashboard](screenshots/dashboard.jpg)
+
+> Screenshots show a demo instance with sample data.
+
+| Songs | Artist |
+|---|---|
+| ![Song pipeline with covers and status tags](screenshots/songs.jpg) | ![Artist page with release stats and genre trend](screenshots/artist.jpg) |
+| **Comments** | **Trends** |
+| ![Comment inbox with AI reply drafts in the artist's voice](screenshots/comments.jpg) | ![Genre share and genre trends over 30 days](screenshots/trends.jpg) |
 
 ## Features
 
