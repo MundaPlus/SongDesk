@@ -1,6 +1,6 @@
 # SongDesk
 
-**A single-user control room for an AI music label.** SongDesk takes a creator from trend data to a finished song package, keeps a roster of virtual artists across labels and YouTube channels, tracks every release, and pulls channel metrics and comments back in.
+**A single-user control room for an AI music label.** SongDesk takes a creator from trend data to a finished song package and its video, keeps a roster of virtual artists across labels and YouTube channels, tracks every release, and pulls channel metrics and comments back in.
 
 It is a server-rendered web app that runs on a home server and is used from any device on the local network. Every AI step runs as a background job, so you can start a generation, move on, and find the result waiting when you come back.
 
@@ -17,6 +17,7 @@ It is a server-rendered web app that runs on a home server and is used from any 
 ## Features
 
 - **Guided creation flow.** Trend or genre, then an artist (the AI proposes three, you pick one), then a concept (three options), then the song package, the video direction and the YouTube metadata. Each step's output is an editable form with *Regenerate* and *Save*, and the next step uses the saved version.
+- **Sondo handoff.** Lyrics come with section tags and a style prompt ready to paste into Sondo. The Sondo link and plan are stored with the song as the record of commercial rights, and the exported track is uploaded back for the video and set steps.
 - **Artist roster.** Artists keep their appearance, style, genre, vocal style, reply voice, image prompts and uploaded images, and are reused on new songs. Labels, channels and artists are linked many-to-many, so an artist can later move to its own channel.
 - **Artist chat.** Ask questions about an artist and get answers drawn from that artist's own stored data, such as why their songs keep returning to the same themes.
 - **Labels and branding.** Labels can be generated last from existing artists. Branding prompts for channel icons, banners and covers.
@@ -28,11 +29,13 @@ It is a server-rendered web app that runs on a home server and is used from any 
 - **Channel setup guides.** Tick-off checklists for creating a channel, branding, publishing, monetisation and distribution, tracked per scope and editable as plain Markdown.
 - **Long-form sets.** Compile many songs into one continuous 1-hour or 2–3-hour video. The AI proposes a running order you can rearrange. The app shows exactly which track is still missing audio or a motion loop, adds chapter timestamps taken from the rendered file, and builds a thumbnail as a collage of the set's covers.
 - **Motion loops and sung videos.** A song's cover becomes a short looping animation of the artist's face via ComfyUI, or a full-length video with the mouth driven by the song's isolated vocal track.
+- **Music videos.** The scene plan becomes keyframes placed on the song's timeline. Each keyframe can be edited and remade on its own, then animated into short clips that are joined and cut to the song. Generation can be queued for many songs at once.
+- **Hook finder.** Finds where the chorus is sung in the audio, by matching the lyric sections to the phrases in the isolated vocal track.
 - **Swappable text backend.** Claude Code CLI, a local Ollama server or any OpenAI-compatible endpoint, chosen at runtime from the settings page. Every call is logged.
 
 ## Tech stack
 
-Python · FastAPI · Uvicorn · Jinja2 · SQLite · vanilla JS · Claude Code CLI · Ollama · OpenAI-compatible APIs · YouTube Data and Analytics APIs · ComfyUI (AdvancedLivePortrait) · ffmpeg · NumPy · Pillow · systemd
+Python · FastAPI · Uvicorn · Jinja2 · SQLite · vanilla JS · Claude Code CLI · Ollama · OpenAI-compatible APIs · YouTube Data and Analytics APIs · ComfyUI (AdvancedLivePortrait, Flux 2 Klein, Wan 2.2) · Mel-Band RoFormer · ffmpeg · NumPy · Pillow · systemd
 
 ## How it works
 
@@ -49,6 +52,22 @@ SongDesk ── queued set ──▶ render worker (any host with ffmpeg)
 ```
 
 The worker shares no filesystem with the app. A worker that dies mid-render leaves an expired lease, and the job goes back in the queue. Motion loops are sent to ComfyUI, which manages its own queue while SongDesk polls for the result.
+
+## From idea to upload: what is automated
+
+The AI drafts every step and the creator chooses and reviews. Two steps stay fully manual, because the services have no usable public upload API for this:
+
+| Step | Who does it |
+|---|---|
+| Genre, artist, concept | AI proposes options, the creator picks one |
+| Lyrics, style prompt, title | AI drafts, the creator edits |
+| Song audio | **Manual in Sondo:** paste, generate, choose a take, download, upload back |
+| Cover loop, sung video or music video | Generated locally, the creator checks and remakes keyframes |
+| YouTube title, description, tags | AI drafts with the AI-disclosure line, the creator reviews |
+| YouTube upload | **Manual in YouTube Studio,** guided by a 12-item checklist, then the link is pasted back |
+| Stats and comments | Synced every six hours; AI drafts replies in the artist's voice, the creator approves each one |
+
+Long-form sets follow the same pattern: the AI proposes the running order and writes the set metadata, a render worker builds the video, and the upload is manual. Direct YouTube upload is planned.
 
 ## Design principles
 
